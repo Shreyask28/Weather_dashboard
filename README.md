@@ -6,8 +6,8 @@ A clean, responsive, and modern weather dashboard web application built from scr
 
 ## 🚀 Live Demo & Links
 
-- **Live Deployment:** [View Live App (Vercel / Netlify)](https://your-deployment-link.vercel.app) *(Replace with your deployed link)*
-- **GitHub Repository:** [GitHub Repo](https://github.com/your-username/weather-dashboard) *(Replace with your GitHub repo URL)*
+- **Live Deployment:** [View Live App (Netlify)](https://shreyas-weather-dashboard.netlify.app) *(Update with your exact Netlify URL)*
+- **GitHub Repository:** [GitHub Repo](https://github.com/Shreyask28/Weather_dashboard)
 
 ---
 
@@ -75,11 +75,11 @@ This project utilizes the **Open-Meteo Suite**:
 ## 📂 Project Structure
 
 ```text
-weather-dashboard/
+Weather_dashboard/
 │
-├── weather.html      # Semantic HTML5 layout and container elements
-├── weather.css       # Styling, glassmorphic effects, and responsive breakpoints
-├── weather.js        # Core logic: API fetching, DOM manipulation, error handling
+├── index.html        # Semantic HTML5 layout and container elements
+├── style.css         # Styling, glassmorphic effects, and responsive breakpoints
+├── script.js         # Core logic: API fetching, DOM manipulation, error handling
 └── README.md         # Documentation and project overview
 ```
 
@@ -89,15 +89,25 @@ weather-dashboard/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/weather-dashboard.git
+   git clone https://github.com/Shreyask28/Weather_dashboard.git
    ```
 2. **Navigate into the project directory:**
    ```bash
-   cd weather-dashboard
+   cd Weather_dashboard
    ```
 3. **Open the project:**
-   - Double-click `weather.html` to open it in any modern browser.
+   - Double-click `index.html` to open it in any modern browser.
    - Or, open it with VS Code's **Live Server** extension.
+
+---
+
+## 👨‍💻 Author & Contact
+
+**Shreyas Vitthal Kumbhar**
+
+* **GitHub:** [@Shreyask28](https://github.com/Shreyask28)
+* **LinkedIn:** [linkedin.com/in/shreyas-kumbhar-63715237a/](https://www.linkedin.com/in/shreyas-kumbhar-63715237a/)
+* **Email:** [kumbharshreyas7777@gmail.com](mailto:kumbharshreyas7777@gmail.com)
 
 ---
 
@@ -105,18 +115,3 @@ weather-dashboard/
 
 This project is created as part of the Web Technology coursework for educational purposes.
 
-
-
-
-## 👨‍💻 Author & Contact
-
-**Shreyas Vitthal Kumbhar**
-
-If you have any questions, feedback, or want to collaborate on AI projects, feel free to reach out!
-
-*   **GitHub:** [@Shreyask28](https://github.com/Shreyask28)
-*   **LinkedIn:** [linkedin.com/in/shreyas-kumbhar-63715237a/](https://www.linkedin.com/in/shreyas-kumbhar-63715237a/)
-*   **Email:** [kumbharshreyas7777@gmail.com](kumbharshreyas7777@gmail.com)
-
----
-⭐ *If you find these tutorials helpful, please consider giving this repository a star!* ⭐
