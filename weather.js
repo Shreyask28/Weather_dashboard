@@ -1,197 +1,214 @@
-const searchForm = document.getElementById('search-form');
-const cityInput = document.getElementById('city-input');
-const loadingSpinner = document.getElementById('loading-spinner');
-const errorMessage = document.getElementById('error-message');
-const weatherDisplay = document.getElementById('weather-display');
+const searchForm = document.getElementById("search-form");
+const cityInput = document.getElementById("city-input");
 
+// Status indicators
+const loadingSpinner = document.getElementById("loading-spinner");
+const errorMessage = document.getElementById("error-message");
 
-const currentCityEl = document.getElementById('current-city');
-const currentTempEl = document.getElementById('current-temp');
-const currentConditionEl = document.getElementById('current-condition');
-const currentWindEl = document.getElementById('current-wind');
+// Weather display & Current weather elements
+const weatherDisplay = document.getElementById("weather-display");
+const currentCity = document.getElementById("current-city");
+const currentTemp = document.getElementById("current-temp");
+const currentCondition = document.getElementById("current-condition");
+const currentWind = document.getElementById("current-wind");
 
-// Forecast Container
-const forecastCardsContainer = document.getElementById('forecast-cards');
+// Forecast cards container
+const forecastCards = document.getElementById("forecast-cards"); 
 
-
-const getWeatherInterpretation = (code) => {
-  const codeMap = {
-    0: { text: 'Clear Sky', icon: '☀️' },
-    1: { text: 'Mainly Clear', icon: '🌤️' },
-    2: { text: 'Partly Cloudy', icon: '⛅' },
-    3: { text: 'Overcast', icon: '☁️' },
-    45: { text: 'Foggy', icon: '🌫️' },
-    48: { text: 'Depositing Rime Fog', icon: '🌫️' },
-    51: { text: 'Light Drizzle', icon: '🌦️' },
-    53: { text: 'Moderate Drizzle', icon: '🌦️' },
-    55: { text: 'Dense Drizzle', icon: '🌧️' },
-    61: { text: 'Slight Rain', icon: '🌦️' },
-    63: { text: 'Moderate Rain', icon: '🌧️' },
-    65: { text: 'Heavy Rain', icon: '🌧️' },
-    71: { text: 'Slight Snow', icon: '🌨️' },
-    73: { text: 'Moderate Snow', icon: '❄️' },
-    75: { text: 'Heavy Snow', icon: '❄️' },
-    80: { text: 'Rain Showers', icon: '🌦️' },
-    81: { text: 'Heavy Showers', icon: '🌧️' },
-    82: { text: 'Violent Showers', icon: '⛈️' },
-    95: { text: 'Thunderstorm', icon: '⛈️' },
-    96: { text: 'Thunderstorm with Hail', icon: '⛈️' },
-    99: { text: 'Severe Thunderstorm', icon: '⛈️' }
-  };
-
-  return codeMap[code] || { text: 'Variable Weather', icon: '🌡️' };
-};
-
-
-const showLoading = () => {
+// State 1: Data is being fetched
+function showLoading() {
   loadingSpinner.classList.remove('hidden');
   errorMessage.classList.add('hidden');
   weatherDisplay.classList.add('hidden');
-};
-
-const hideLoading = () => {
+}
+// State 2: Something went wrong
+function showError(message) {
   loadingSpinner.classList.add('hidden');
-};
-
-const showError = (message) => {
-  hideLoading();
+  weatherDisplay.classList.add('hidden');
+  
+  // Update the text in our error container
   errorMessage.textContent = message;
   errorMessage.classList.remove('hidden');
-  weatherDisplay.classList.add('hidden');
-};
-
-const clearError = () => {
+}
+// State 3: Everything succeeded
+function showWeather() {
+  loadingSpinner.classList.add('hidden');
   errorMessage.classList.add('hidden');
-  errorMessage.textContent = '';
-};
+  weatherDisplay.classList.remove('hidden');
+}
 
 
-const formatDayName = (dateStr, index) => {
-  if (index === 0) return 'Today';
-  const date = new Date(dateStr + 'T00:00:00');
-  return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-};
+//serach form event listener
 
 
-const fetchCoordinates = async (cityName) => {
-  const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`;
 
-  const response = await fetch(geocodingUrl);
+async function getCityCoordinates(cityName) {
+  if(!navigator.onLine){
+    throw new Error("you are offline. Please check your internet connection.");
+  }
+
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`;
+
+  const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error(`Geocoding service unavailable (HTTP ${response.status})`);
+    throw new Error("Failed to fetch city coordinates.");
   }
 
   const data = await response.json();
-
+  
   if (!data.results || data.results.length === 0) {
-    throw new Error(`City "${cityName}" not found. Please check spelling.`);
+    throw new Error("City not found.");
+  }
+  return data.results[0]; // Return the first result
+
+
+}
+
+
+
+
+
+
+const weatherDescriptions = {
+  0: { text: "Clear Sky", icon: "☀️" },
+  1: { text: "Mainly Clear", icon: "🌤️" },
+  2: { text: "Partly Cloudy", icon: "⛅" },
+  3: { text: "Overcast", icon: "☁️" },
+  45: { text: "Fog", icon: "🌫️" },
+  48: { text: "Depositing Rime Fog", icon: "🌫️" },
+  51: { text: "Light Drizzle", icon: "🌦️" },
+  61: { text: "Slight Rain", icon: "🌧️" },
+  63: { text: "Moderate Rain", icon: "🌧️" },
+  65: { text: "Heavy Rain", icon: "🌧️" },
+  71: { text: "Slight Snow", icon: "🌨️" },
+  75: { text: "Heavy Snow", icon: "❄️" },
+  95: { text: "Thunderstorm", icon: "⛈️" }
+};
+
+
+
+
+
+
+// Helper function to safely look up any code
+function getWeatherInfo(code) {
+  return weatherDescriptions[code] || { text: "Variable", icon: "🌡️" };
+}
+
+
+// the latitude and longitude data will go to openmateo api to get the weather data for that city.
+
+
+async function getWeatherData(latitude, longitude){
+
+
+  if(!navigator.onLine) {
+    throw new Error("You are offline. Please check your internet connection.");
   }
 
-  const { name, country, latitude, longitude } = data.results[0];
-  return { name, country, latitude, longitude };
-};
 
-/**
- * Fetch current weather and multi-day forecast from Open-Meteo
- */
-const fetchWeatherData = async (latitude, longitude) => {
-  const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`;
 
-  const response = await fetch(forecastUrl);
+  const url =`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`;
 
-  if (!response.ok) {
-    throw new Error(`Weather service unavailable (HTTP ${response.status})`);
+  const response = await fetch(url);
+
+  if(!response.ok){
+    throw new Error("Failed to fetch weather data.");
+
   }
 
-  return await response.json();
-};
+  const data = await response.json();
+  return data;
+
+}
 
 
-const displayCurrentWeather = (cityName, country, currentWeather) => {
-  const { temperature, windspeed, weathercode } = currentWeather;
-  const condition = getWeatherInterpretation(weathercode);
-
-  currentCityEl.textContent = country ? `${cityName}, ${country}` : cityName;
-  currentTempEl.textContent = `${Math.round(temperature)}°C`;
-  currentConditionEl.textContent = `${condition.icon} ${condition.text}`;
-  currentWindEl.textContent = `${windspeed} km/h`;
-};
-
-/**
- * Dynamically creates and renders forecast cards using DOM manipulation
- */
-const displayForecast = (dailyData) => {
-  // Clear previous cards
-  forecastCardsContainer.innerHTML = '';
-
-  const { time, weathercode, temperature_2m_max, temperature_2m_min } = dailyData;
-
-  // Display up to 5 days of forecast
-  const daysToShow = Math.min(time.length, 5);
-
-  for (let i = 0; i < daysToShow; i++) {
-    const dayName = formatDayName(time[i], i);
-    const condition = getWeatherInterpretation(weathercode[i]);
-    const maxTemp = Math.round(temperature_2m_max[i]);
-    const minTemp = Math.round(temperature_2m_min[i]);
-
-    // Create card element dynamically
-    const card = document.createElement('div');
-    card.className = 'forecast-card';
-
-    card.innerHTML = `
-      <p class="forecast-date">${dayName}</p>
-      <div class="forecast-icon" aria-label="${condition.text}">${condition.icon}</div>
-      <p class="forecast-condition">${condition.text}</p>
-      <p class="forecast-temp">${maxTemp}° / ${minTemp}°C</p>
-    `;
-
-    forecastCardsContainer.appendChild(card);
-  }
-};
 
 
-const handleSearch = async (city) => {
-  const trimmedCity = city.trim();
-
- 
-  if (!trimmedCity) {
-    showError('Please enter a city name to search.');
+  searchForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const cityName = cityInput.value.trim();
+  if (!cityName) {
+    showError("Please enter a city name.");
     return;
   }
 
-  // Check network connectivity
-  if (!navigator.onLine) {
-    showError('No internet connection. Please check your network and try again.');
-    return;
-  }
+  showLoading();
 
   try {
-    showLoading();
-    clearError();
+    // 1. Get coordinates
+    const cityData = await getCityCoordinates(cityName);
 
-   
-    const { name, country, latitude, longitude } = await fetchCoordinates(trimmedCity);
-
-   
-    const weatherData = await fetchWeatherData(latitude, longitude);
-
-   
-    displayCurrentWeather(name, country, weatherData.current_weather);
-    displayForecast(weatherData.daily);
+    // 2. Get weather data using those coordinates!
+    const weatherData = await getWeatherData(cityData.latitude, cityData.longitude);
 
     
-    hideLoading();
-    weatherDisplay.classList.remove('hidden');
+    // Update the UI with the retrieved data
+    displayCurrentWeather(cityData, weatherData.current_weather);
+    displayForecast(weatherData.daily);
+
+
+    showWeather();
 
   } catch (error) {
-    showError(error.message || 'An unexpected error occurred while fetching weather data.');
+    console.error(error);
+    showError(error.message);
   }
-};
-
-
-searchForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  handleSearch(cityInput.value);
 });
+
+
+// Function: Update the Current Weather Card on the screen
+function displayCurrentWeather(cityData, currentWeather) {
+  const { temperature, windspeed, weathercode } = currentWeather;
+  const info = getWeatherInfo(weathercode);
+
+  // Set city name & country
+  currentCity.textContent = `${cityData.name}, ${cityData.country || ''}`;
+
+  // Round temperature to integer degrees
+  currentTemp.textContent = `${Math.round(temperature)}°C`;
+
+  // Display condition emoji and text
+  currentCondition.textContent = `${info.icon} ${info.text}`;
+
+  // Set wind speed
+  currentWind.textContent = `${windspeed} km/h`;
+}
+
+// Function: Dynamically create forecast cards for the next 5 days
+function displayForecast(daily) {
+  // 1. Wipe out any cards from previous searches
+  forecastCards.innerHTML = '';
+
+  // 2. Loop through the next 5 days (indexes 1 to 5)
+  for (let i = 1; i <= 5; i++) {
+    const dateStr = daily.time[i];
+    const maxTemp = Math.round(daily.temperature_2m_max[i]);
+    const minTemp = Math.round(daily.temperature_2m_min[i]);
+    const info = getWeatherInfo(daily.weathercode[i]);
+
+    // Format readable date (e.g., "Wed, Nov 4")
+    const dateObj = new Date(dateStr);
+    const dayName = dateObj.toLocaleDateString(undefined, {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    });
+
+    // 3. Create the card container element dynamically
+    const card = document.createElement('div');
+    card.classList.add('forecast-card');
+
+    // 4. Populate with HTML matching weather.css classes
+    card.innerHTML = `
+      <div class="forecast-date">${dayName}</div>
+      <div class="forecast-icon">${info.icon}</div>
+      <div class="forecast-condition">${info.text}</div>
+      <div class="forecast-temp">${maxTemp}° / ${minTemp}°C</div>
+    `;
+
+    // 5. Append the card to the forecast container
+    forecastCards.appendChild(card);
+  }
+}
