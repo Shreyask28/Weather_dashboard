@@ -75,6 +75,27 @@ body {
   font-size: 0.95rem;
 }
 
+.unit-toggle {
+  margin-top: 14px;
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--accent-color);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  backdrop-filter: blur(8px);
+}
+
+.unit-toggle:hover {
+  background: var(--card-hover);
+  border-color: var(--accent-color);
+  transform: translateY(-1px);
+}
+
 /* Search Section */
 .search-section {
   margin-bottom: 25px;
@@ -129,6 +150,31 @@ body {
 }
 
 #search-btn:active {
+  transform: translateY(0);
+}
+
+#geo-btn {
+  padding: 14px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text-primary);
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+}
+
+#geo-btn:hover {
+  background-color: var(--card-hover);
+  border-color: var(--accent-color);
+  transform: translateY(-1px);
+}
+
+#geo-btn:active {
   transform: translateY(0);
 }
 
@@ -327,7 +373,8 @@ body {
     flex-direction: column;
   }
 
-  #search-btn {
+  #search-btn,
+  #geo-btn {
     width: 100%;
   }
 

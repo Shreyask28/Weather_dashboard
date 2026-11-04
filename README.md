@@ -15,9 +15,11 @@ A clean, responsive, and modern weather dashboard web application built from scr
 
 - **Search by City:** Instant weather search by city name (e.g., London, Tokyo, Mumbai, New York) with support for both the **Search button** and the **Enter key**.
 - **Current Weather Conditions:**
-  - Current temperature in °C (rounded for clean display)
+  - Current temperature in °C or °F (rounded for clean display)
   - Weather condition description with matching emoji icons (mapped from WMO weather codes)
   - Wind speed in km/h
+- **"Use My Location" (Geolocation API):** One-click button to automatically detect the user's device coordinates and load real-time local weather.
+- **Unit Switching (°C ↔ °F):** Instant toggle button to switch between Celsius and Fahrenheit across both current weather and 5-day forecast cards without re-fetching.
 - **5-Day Dynamic Forecast:**
   - Forecast cards generated on the fly via JavaScript DOM manipulation (`document.createElement`).
   - Displays formatted dates (e.g., "Wed, Nov 4"), weather icons, conditions, and daily max/min temperatures.

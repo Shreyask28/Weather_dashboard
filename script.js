@@ -1,5 +1,7 @@
 const searchForm = document.getElementById("search-form");
 const cityInput = document.getElementById("city-input");
+const geoBtn = document.getElementById("geo-btn");
+const unitToggle = document.getElementById("unit-toggle");
 
 // Status indicators
 const loadingSpinner = document.getElementById("loading-spinner");
@@ -13,7 +15,21 @@ const currentCondition = document.getElementById("current-condition");
 const currentWind = document.getElementById("current-wind");
 
 // Forecast cards container
-const forecastCards = document.getElementById("forecast-cards"); 
+const forecastCards = document.getElementById("forecast-cards");
+
+// App State: Unit Toggle & Data Cache
+let isFahrenheit = false;
+let lastCityData = null;
+let lastWeatherData = null;
+
+// Helper: Format temperature according to selected unit (°C or °F)
+function formatTemp(celsius) {
+  if (isFahrenheit) {
+    const fahrenheit = (celsius * 9) / 5 + 32;
+    return `${Math.round(fahrenheit)}°F`;
+  }
+  return `${Math.round(celsius)}°C`;
+} 
 
 // State 1: Data is being fetched
 function showLoading() {
@@ -143,11 +159,13 @@ async function getWeatherData(latitude, longitude){
     // 2. Get weather data using those coordinates!
     const weatherData = await getWeatherData(cityData.latitude, cityData.longitude);
 
-    
+    // Cache the data for instant unit switching (°C <-> °F)
+    lastCityData = cityData;
+    lastWeatherData = weatherData;
+
     // Update the UI with the retrieved data
     displayCurrentWeather(cityData, weatherData.current_weather);
     displayForecast(weatherData.daily);
-
 
     showWeather();
 
@@ -157,6 +175,66 @@ async function getWeatherData(latitude, longitude){
   }
 });
 
+// ==========================================
+// GEOLOCATION: "Use My Location"
+// ==========================================
+geoBtn.addEventListener("click", () => {
+  // Check browser support
+  if (!navigator.geolocation) {
+    showError("Geolocation is not supported by your browser.");
+    return;
+  }
+
+  showLoading();
+
+  // Request user's device coordinates
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+
+      try {
+        // Fetch weather directly for device GPS coordinates
+        const weatherData = await getWeatherData(latitude, longitude);
+
+        const locationData = { name: "Your Location", country: "GPS" };
+
+        // Cache the data
+        lastCityData = locationData;
+        lastWeatherData = weatherData;
+
+        // Render to UI
+        displayCurrentWeather(locationData, weatherData.current_weather);
+        displayForecast(weatherData.daily);
+
+        showWeather();
+      } catch (err) {
+        console.error(err);
+        showError("Failed to fetch weather for your location.");
+      }
+    },
+    (geoError) => {
+      console.warn("Geolocation denied or error:", geoError);
+      showError("Location permission denied. Please search for a city instead.");
+    }
+  );
+});
+
+// ==========================================
+// TEMPERATURE UNIT TOGGLE (°C <-> °F)
+// ==========================================
+unitToggle.addEventListener("click", () => {
+  // Toggle between Celsius and Fahrenheit
+  isFahrenheit = !isFahrenheit;
+
+  // Update button label
+  unitToggle.textContent = isFahrenheit ? "Switch to °C" : "Switch to °F";
+
+  // If weather data is already displayed, re-render immediately
+  if (lastCityData && lastWeatherData) {
+    displayCurrentWeather(lastCityData, lastWeatherData.current_weather);
+    displayForecast(lastWeatherData.daily);
+  }
+});
 
 // Function: Update the Current Weather Card on the screen
 function displayCurrentWeather(cityData, currentWeather) {
@@ -166,8 +244,8 @@ function displayCurrentWeather(cityData, currentWeather) {
   // Set city name & country
   currentCity.textContent = `${cityData.name}, ${cityData.country || ''}`;
 
-  // Round temperature to integer degrees
-  currentTemp.textContent = `${Math.round(temperature)}°C`;
+  // Formatted temperature with current unit (°C or °F)
+  currentTemp.textContent = formatTemp(temperature);
 
   // Display condition emoji and text
   currentCondition.textContent = `${info.icon} ${info.text}`;
@@ -184,8 +262,8 @@ function displayForecast(daily) {
   // 2. Loop through the next 5 days (indexes 1 to 5)
   for (let i = 1; i <= 5; i++) {
     const dateStr = daily.time[i];
-    const maxTemp = Math.round(daily.temperature_2m_max[i]);
-    const minTemp = Math.round(daily.temperature_2m_min[i]);
+    const maxTemp = daily.temperature_2m_max[i];
+    const minTemp = daily.temperature_2m_min[i];
     const info = getWeatherInfo(daily.weathercode[i]);
 
     // Format readable date (e.g., "Wed, Nov 4")
@@ -200,12 +278,12 @@ function displayForecast(daily) {
     const card = document.createElement('div');
     card.classList.add('forecast-card');
 
-    // 4. Populate with HTML matching weather.css classes
+    // 4. Populate with HTML matching weather.css classes & formatted temps
     card.innerHTML = `
       <div class="forecast-date">${dayName}</div>
       <div class="forecast-icon">${info.icon}</div>
       <div class="forecast-condition">${info.text}</div>
-      <div class="forecast-temp">${maxTemp}° / ${minTemp}°C</div>
+      <div class="forecast-temp">${formatTemp(maxTemp)} / ${formatTemp(minTemp)}</div>
     `;
 
     // 5. Append the card to the forecast container
