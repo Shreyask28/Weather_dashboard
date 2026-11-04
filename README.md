@@ -6,7 +6,7 @@ A clean, responsive, and modern weather dashboard web application built from scr
 
 ## 🚀 Live Demo & Links
 
-- **Live Deployment:** [View Live App (Netlify)](https://shreyas-weather-dashboard.netlify.app) *(Update with your exact Netlify URL)*
+- **Live Deployment:** [View Live App (Netlify)](https://weatherdasboardshreyas.netlify.app) 
 - **GitHub Repository:** [GitHub Repo](https://github.com/Shreyask28/Weather_dashboard)
 
 ---
